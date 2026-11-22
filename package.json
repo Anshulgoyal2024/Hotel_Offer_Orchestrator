@@ -1,0 +1,42 @@
+{
+  "name": "hotel-offer-orchestrator",
+  "version": "1.0.0",
+  "description": "Aggregates overlapping hotel offers from two suppliers using Temporal, dedupes by name, caches in Redis and serves price-range queries from a Redis sorted set.",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start:api": "node dist/server.js",
+    "start:worker": "node dist/worker.js",
+    "dev:api": "tsx watch src/server.ts | pino-pretty",
+    "dev:worker": "tsx watch src/worker.ts | pino-pretty",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@temporalio/activity": "^1.26.0",
+    "@temporalio/client": "^1.26.0",
+    "@temporalio/common": "^1.26.0",
+    "@temporalio/worker": "^1.26.0",
+    "@temporalio/workflow": "^1.26.0",
+    "express": "^5.1.0",
+    "ioredis": "^5.6.0",
+    "pino": "^9.7.0",
+    "pino-http": "^10.5.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@temporalio/testing": "^1.26.0",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "@types/supertest": "^6.0.0",
+    "pino-pretty": "^13.0.0",
+    "supertest": "^7.1.0",
+    "tsx": "^4.20.0",
+    "typescript": "~5.9.0",
+    "vitest": "^5.1.1"
+  }
+}
