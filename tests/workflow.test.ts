@@ -1,7 +1,7 @@
 import path from 'node:path';
-import { ApplicationFailure, WorkflowFailedError } from '@temporalio/client';
+import { ApplicationFailure, Client, Connection, WorkflowFailedError } from '@temporalio/client';
 import { TestWorkflowEnvironment } from '@temporalio/testing';
-import { DefaultLogger, Runtime, Worker } from '@temporalio/worker';
+import { DefaultLogger, NativeConnection, Runtime, Worker } from '@temporalio/worker';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Activities } from '../src/activities';
 import type { hotelOffersWorkflow } from '../src/workflows';
@@ -29,10 +29,52 @@ const offer = (name: string, price: number, supplier: SupplierId, commissionPct:
   commissionPct,
 });
 
-let env: TestWorkflowEnvironment;
+type WorkflowTestEnvironment =
+  | TestWorkflowEnvironment
+  | {
+      client: Client;
+      nativeConnection: NativeConnection;
+      teardown: () => Promise<void>;
+    };
+
+let env: WorkflowTestEnvironment;
+
+async function connectToTemporal(address: string): Promise<WorkflowTestEnvironment> {
+  const clientConnection = await Connection.connect({ address, connectTimeout: '2s' });
+  try {
+    await clientConnection.workflowService.getSystemInfo({});
+    const nativeConnection = await NativeConnection.connect({ address });
+    return {
+      client: new Client({ connection: clientConnection }),
+      nativeConnection,
+      teardown: async () => {
+        await Promise.allSettled([clientConnection.close(), nativeConnection.close()]);
+      },
+    };
+  } catch (err) {
+    await clientConnection.close();
+    throw err;
+  }
+}
 
 beforeAll(async () => {
   Runtime.install({ logger: new DefaultLogger('WARN') }); // keep test output readable
+
+  const configuredAddress = process.env.TEMPORAL_TEST_ADDRESS;
+  if (configuredAddress) {
+    env = await connectToTemporal(configuredAddress);
+    return;
+  }
+
+  // Reuse the Compose dev server when it is already running. This avoids
+  // downloading a second server binary and binding a random local port.
+  try {
+    env = await connectToTemporal('localhost:7233');
+    return;
+  } catch {
+    // No external server: fall through to Temporal's local test server.
+  }
+
   const cliPath = process.env.TEMPORAL_CLI_PATH;
   env = await TestWorkflowEnvironment.createLocal(
     cliPath ? { server: { executable: { type: 'existing-path', path: cliPath } } } : undefined,

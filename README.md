@@ -215,19 +215,19 @@ npm run build
 npm test
 ```
 
-The workflow tests use Temporal's local test server; the first run may download its executable. Set `TEMPORAL_CLI_PATH` to an existing compatible Temporal CLI executable to avoid that download. The Redis repository integration tests connect to `REDIS_URL` (default `localhost:6379`) and skip when Redis is unreachable.
+The workflow tests use a Temporal server at `localhost:7233` when one is running (for example, from Docker Compose). Set `TEMPORAL_TEST_ADDRESS` to use another server. If no external server is available, the tests start Temporal's local test server, which may download its executable the first time; set `TEMPORAL_CLI_PATH` to an existing compatible CLI executable to avoid that download. The Redis repository integration tests connect to `REDIS_URL` (default `localhost:6379`) and skip when Redis is unreachable.
 
 Verification performed for this checkout:
 
 - `npm run typecheck` — passed.
 - `npm run build` — passed.
 - `npm test` — 44 tests passed (includes Temporal workflow and Redis integration tests).
-- Newman Postman run — 24 requests and 62 assertions passed against the running Compose stack.
+- Newman Postman run — 25 requests and 64 assertions passed against the running Compose stack.
 - `docker compose up -d --build` — API, worker, Temporal, and Redis started; `/health` returned `ok`; a forced Delhi aggregation returned `200` with eight offers and a workflow ID; the `5000`–`10000` price query returned `200` from cache with three matching offers.
 
 ## Postman collection
 
-Import [`postman/hotel-offer-orchestrator.postman_collection.json`](postman/hotel-offer-orchestrator.postman_collection.json) into Postman. Its `baseUrl` variable defaults to `http://localhost:3000`; it contains 24 requests for health, hotel offers, cache behavior, price ranges, validation, supplier failure and recovery, and the supplier APIs. Run all requests sequentially and confirm every assertion passes; the supplier-failure folder changes in-memory chaos state and restores it near the end. The full ordered checklist is in [`postman/POSTMAN_TESTING.md`](postman/POSTMAN_TESTING.md). Newman can run the collection with:
+Import [`postman/hotel-offer-orchestrator.postman_collection.json`](postman/hotel-offer-orchestrator.postman_collection.json) into Postman. Its `baseUrl` variable defaults to `http://localhost:3000`; it contains 25 requests for health, hotel offers, cache behavior, price ranges, validation, supplier failure and recovery, and the supplier APIs. Run all requests sequentially and confirm every assertion passes; the supplier-failure folder changes in-memory chaos state and restores it near the end. The full ordered checklist is in [`postman/POSTMAN_TESTING.md`](postman/POSTMAN_TESTING.md). Newman can run the collection with:
 
 ```bash
 npx newman run postman/hotel-offer-orchestrator.postman_collection.json
