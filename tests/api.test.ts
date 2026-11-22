@@ -132,6 +132,21 @@ describe('GET /api/hotels', () => {
   });
 });
 
+describe('GET /', () => {
+  it('serves a browser landing page with links to the API examples', async () => {
+    const { app } = build();
+    const res = await request(app).get('/');
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toContain('text/html');
+    expect(res.text).toContain('Hotel Offer Orchestrator');
+    expect(res.text).toContain('/health/live');
+    expect(res.text).toContain('/api/hotels?city=delhi');
+    expect(res.text).toContain('/supplierA/hotels?city=delhi');
+    expect(res.text).toContain('/supplierB/hotels?city=delhi');
+  });
+});
+
 describe('GET /health', () => {
   it('returns 200 when healthy', async () => {
     const { app } = build();

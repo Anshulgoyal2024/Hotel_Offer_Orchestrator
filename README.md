@@ -5,6 +5,7 @@ A small TypeScript service that combines hotel offers from two mock supplier API
 ## Features
 
 - Express API with input validation, request IDs, structured logs, health checks, and consistent error responses.
+- A small browser landing page at `/` with links to the main API examples.
 - Two mock supplier APIs with overlapping catalogues and optional failure injection.
 - Temporal workflow with parallel supplier activities, retries for transient errors, and partial results when one supplier fails.
 - Name-based deduplication, choosing the cheapest offer; equal prices use commission and supplier name as deterministic tie-breakers.
@@ -76,6 +77,10 @@ docker compose down --volumes
 The Compose Temporal service is a local development server backed by SQLite. It is not a production Temporal deployment. The image tag defaults to `latest`; optionally set `TEMPORAL_VERSION` in the Compose `.env` file to pin a tag.
 
 ## API
+
+### Landing page
+
+`GET /` serves a simple browser page with clickable links for liveness, dependency health, Delhi hotel offers, price filtering, and both mock suppliers. The API still returns JSON from its API routes.
 
 ### Hotel offers
 
@@ -221,13 +226,13 @@ Verification performed for this checkout:
 
 - `npm run typecheck` — passed.
 - `npm run build` — passed.
-- `npm test` — 44 tests passed (includes Temporal workflow and Redis integration tests).
-- Newman Postman run — 25 requests and 64 assertions passed against the running Compose stack.
+- `npm test` — 45 tests passed (includes Temporal workflow and Redis integration tests).
+- Newman Postman run — 26 requests and 66 assertions passed against the running Compose stack.
 - `docker compose up -d --build` — API, worker, Temporal, and Redis started; `/health` returned `ok`; a forced Delhi aggregation returned `200` with eight offers and a workflow ID; the `5000`–`10000` price query returned `200` from cache with three matching offers.
 
 ## Postman collection
 
-Import [`postman/hotel-offer-orchestrator.postman_collection.json`](postman/hotel-offer-orchestrator.postman_collection.json) into Postman. Its `baseUrl` variable defaults to `http://localhost:3000`; it contains 25 requests for health, hotel offers, cache behavior, price ranges, validation, supplier failure and recovery, and the supplier APIs. Run all requests sequentially and confirm every assertion passes; the supplier-failure folder changes in-memory chaos state and restores it near the end. The full ordered checklist is in [`postman/POSTMAN_TESTING.md`](postman/POSTMAN_TESTING.md). Newman can run the collection with:
+Import [`postman/hotel-offer-orchestrator.postman_collection.json`](postman/hotel-offer-orchestrator.postman_collection.json) into Postman. Its `baseUrl` variable defaults to `http://localhost:3000`; it contains 26 requests for the home page, health, hotel offers, cache behavior, price ranges, validation, supplier failure and recovery, and the supplier APIs. Run all requests sequentially and confirm every assertion passes; the supplier-failure folder changes in-memory chaos state and restores it near the end. The full ordered checklist is in [`postman/POSTMAN_TESTING.md`](postman/POSTMAN_TESTING.md). Newman can run the collection with:
 
 ```bash
 npx newman run postman/hotel-offer-orchestrator.postman_collection.json
@@ -252,6 +257,7 @@ npx newman run postman/hotel-offer-orchestrator.postman_collection.json
 |   |-- api/
 |   |   |-- app.ts
 |   |   |-- health.routes.ts
+|   |   |-- home.routes.ts
 |   |   |-- hotels.routes.ts
 |   |   `-- middleware.ts
 |   |-- config/index.ts

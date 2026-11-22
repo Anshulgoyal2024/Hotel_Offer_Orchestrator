@@ -3,6 +3,7 @@ import type { AppLogger } from '../utils/logger';
 import type { HotelOffersService } from '../services/hotel-offers.service';
 import type { HealthService } from '../services/health.service';
 import { createMockSupplierRouters } from '../mock/supplier.routes';
+import { createHomeRouter } from './home.routes';
 import { createHotelsRouter } from './hotels.routes';
 import { createHealthRouter } from './health.routes';
 import { errorHandler, notFoundHandler, requestLogger } from './middleware';
@@ -22,6 +23,7 @@ export function createApp(deps: AppDeps): Express {
   app.use(requestLogger(deps.logger));
   app.use(express.json({ limit: '10kb' }));
 
+  app.use('/', createHomeRouter());
   app.use('/health', createHealthRouter(deps.health));
   app.use('/api/hotels', createHotelsRouter(deps.hotelOffers));
 

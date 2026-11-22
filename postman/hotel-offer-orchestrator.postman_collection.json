@@ -77,6 +77,36 @@
               }
             }
           ]
+        },
+        {
+          "name": "Home page (API quick links)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ""
+              ],
+              "query": []
+            },
+            "description": "Opens the browser landing page with clickable health, hotel, price-filter, and mock supplier examples."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200 and response is HTML\", () => { pm.response.to.have.status(200); pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"text/html\"); });",
+                  "pm.test(\"Home page links to hotel and supplier APIs\", () => { const html = pm.response.text(); [\"/api/hotels?city=delhi\", \"/health/live\", \"/supplierA/hotels?city=delhi\", \"/supplierB/hotels?city=delhi\"].forEach(path => pm.expect(html).to.include(path)); });"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
